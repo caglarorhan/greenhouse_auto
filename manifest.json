@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Greenhouse Auto Extension",
+  "version": "1.0.0",
+  "description": "A minimal Chrome extension for Greenhouse Automations",
+  "icons": {
+    "16": "img/robot_16.png",
+    "32": "img/robot_32.png",
+    "48": "img/robot_48.png",
+    "128": "img/robot_128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "img/robot_16.png",
+      "32": "img/robot_32.png",
+      "48": "img/robot_48.png",
+      "128": "img/robot_128.png"
+    }
+  },
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "problems/solvers/*.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

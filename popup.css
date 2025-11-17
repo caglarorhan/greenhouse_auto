@@ -1,0 +1,161 @@
+body {
+  width: 400px;
+  min-height: 300px;
+  padding: 0;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.container {
+  padding: 20px;
+  background: white;
+  min-height: 300px;
+}
+
+h1 {
+  font-size: 20px;
+  color: #333;
+  margin: 0 0 5px 0;
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #888;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+.problem-selector {
+  margin-bottom: 15px;
+}
+
+.problem-selector label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 5px;
+}
+
+.problem-selector select {
+  width: 100%;
+  padding: 8px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.problem-selector select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.problem-info {
+  background-color: #f8f9fa;
+  border-left: 4px solid #667eea;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.problem-info.hidden {
+  display: none;
+}
+
+.problem-info h3 {
+  font-size: 14px;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.problem-info .description {
+  font-size: 12px;
+  color: #666;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.problem-info .url {
+  font-size: 11px;
+  color: #667eea;
+  margin: 0;
+  word-break: break-all;
+}
+
+.solve-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.solve-btn:hover:not(:disabled) {
+  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.solve-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.wiki-btn {
+  background-color: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  text-align: center;
+  font-size: 13px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.wiki-btn:hover {
+  background-color: #5568d3;
+}
+
+.status {
+  margin-top: 15px;
+  padding: 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  display: none;
+  line-height: 1.4;
+}
+
+.status.show {
+  display: block;
+}
+
+.status.success {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+}
+
+.status.error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+
+.status.info {
+  color: #004085;
+  background-color: #cce5ff;
+  border: 1px solid #b8daff;
+}

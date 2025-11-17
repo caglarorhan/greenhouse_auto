@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Greenhouse Auto - Wiki</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+      line-height: 1.6;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #667eea;
+      margin-top: 30px;
+    }
+    h3 {
+      color: #555;
+      margin-top: 20px;
+    }
+    .problem-section {
+      background: #f8f9fa;
+      padding: 20px;
+      margin: 20px 0;
+      border-left: 4px solid #667eea;
+      border-radius: 4px;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+    pre {
+      background: #2d2d2d;
+      color: #f8f8f8;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: #f8f8f8;
+    }
+    .note {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 10px 15px;
+      margin: 15px 0;
+    }
+    .tip {
+      background: #d1ecf1;
+      border-left: 4px solid #17a2b8;
+      padding: 10px 15px;
+      margin: 15px 0;
+    }
+    ul {
+      padding-left: 25px;
+    }
+    li {
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 Greenhouse Auto - Wiki</h1>
+    
+    <h2>📖 Overview</h2>
+    <p>
+      Greenhouse Auto is a Chrome extension designed to automate Greenhouse job application forms. 
+      It handles complex React-based forms with special components like React-Select v5 that require proper event simulation.
+    </p>
+
+    <h2>🏗️ Architecture</h2>
+    <h3>File Structure</h3>
+    <pre><code>greenhouse_auto/
+├── manifest.json              # Extension configuration
+├── popup.html/js/css          # Extension UI
+├── content.js                 # Content script with solvers
+├── background.js              # Background service worker
+├── problems/
+│   └── problems.js            # Problem definitions
+└── wiki.html                  # This documentation</code></pre>
+
+    <h3>Components</h3>
+    <ul>
+      <li><strong>Popup:</strong> User interface for selecting and running problems</li>
+      <li><strong>Content Script:</strong> Executes solver functions on target web pages</li>
+      <li><strong>Problems.js:</strong> Central registry of all problems and their metadata</li>
+    </ul>
+
+    <h2>🎯 How It Works</h2>
+    <ol>
+      <li>User opens the extension popup</li>
+      <li>User selects a problem from the dropdown</li>
+      <li>Extension displays problem information (description, URL)</li>
+      <li>User clicks the "SOLVE" button</li>
+      <li>Extension opens the target URL</li>
+      <li>Content script detects the pending solver and executes it after page load</li>
+      <li>Solver function fills the form/completes the automation</li>
+      <li>Result is displayed as an on-page notification</li>
+    </ol>
+
+    <div class="problem-section">
+      <h2>🔧 Problem 1: Greenhouse Calendly Application</h2>
+      <p><strong>Target:</strong> <a href="https://job-boards.greenhouse.io/calendly/jobs/8171767002" target="_blank">Greenhouse Calendly Job Application</a></p>
+      <p><strong>Challenge:</strong> React-Select v5 location field</p>
+      
+      <h3>The Problem</h3>
+      <p>
+        Greenhouse job forms use React-Select v5 for the location field. Simply setting <code>input.value</code> doesn't work because:
+      </p>
+      <ul>
+        <li>React-Select manages its own internal state</li>
+        <li>The component needs to make an API call to fetch location suggestions</li>
+        <li>The dropdown options are dynamically rendered based on API response</li>
+        <li>Selection must be made by clicking an actual option element</li>
+      </ul>
+
+      <h3>The Solution</h3>
+      <p>We simulate real user typing behavior to trigger React-Select's search mechanism:</p>
+
+      <h4>Step 1: Focus and Clear</h4>
+      <pre><code>const input = document.querySelector("#candidate-location");
+input.focus();
+input.click();
+input.value = '';</code></pre>
+
+      <h4>Step 2: Simulate Keyboard Typing</h4>
+      <pre><code>for (let i = 0; i < cityName.length; i++) {
+  const char = cityName[i];
+  
+  // Dispatch keydown event
+  input.dispatchEvent(new KeyboardEvent('keydown', {
+    key: char,
+    bubbles: true,
+    cancelable: true
+  }));
+  
+  // Update value
+  input.value = cityName.substring(0, i + 1);
+  
+  // Dispatch InputEvent (React listens to this!)
+  input.dispatchEvent(new InputEvent('input', { 
+    bubbles: true,
+    data: char,
+    inputType: 'insertText'
+  }));
+  
+  // Dispatch keyup event
+  input.dispatchEvent(new KeyboardEvent('keyup', {
+    key: char,
+    bubbles: true
+  }));
+  
+  // Wait between characters
+  await new Promise(resolve => setTimeout(resolve, 150));
+}</code></pre>
+
+      <h4>Step 3: Wait for Dropdown</h4>
+      <pre><code>function waitForOption(text) {
+  return new Promise((resolve) => {
+    const observer = new MutationObserver(() => {
+      const options = [...document.querySelectorAll(".select__option")];
+      const found = options.find(opt => opt.innerText.includes(text));
+      if (found) {
+        observer.disconnect();
+        resolve(found);
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    setTimeout(() => {
+      observer.disconnect();
+      resolve(null);
+    }, 5000);
+  });
+}</code></pre>
+
+      <h4>Step 4: Click the Option</h4>
+      <pre><code>const option = await waitForOption('Istanbul');
+if (option) {
+  option.scrollIntoView({ block: 'nearest' });
+  option.click();
+}</code></pre>
+
+      <div class="tip">
+        <strong>💡 Key Insight:</strong> The <code>InputEvent</code> with <code>inputType: 'insertText'</code> is critical. 
+        This is what triggers React-Select's onChange handler and initiates the API call.
+      </div>
+
+      <h3>What Gets Filled</h3>
+      <ul>
+        <li>First Name: John</li>
+        <li>Last Name: Doe</li>
+        <li>Email: john.doe@example.com</li>
+        <li>Phone: +90 555 123 4567</li>
+        <li>Location: Istanbul, Turkey (via React-Select)</li>
+        <li>LinkedIn Profile</li>
+        <li>Website</li>
+        <li>Cover Letter / Additional Info</li>
+      </ul>
+
+      <div class="note">
+        <strong>⚠️ Important:</strong> The extension waits 2 seconds after page load to ensure all React components are mounted before executing the solver.
+      </div>
+    </div>
+
+    <h2>➕ Adding New Problems</h2>
+    
+    <h3>Step 1: Define the Problem</h3>
+    <p>Add a new entry to <code>problems/problems.js</code>:</p>
+    <pre><code>{
+  id: 'problem2',
+  name: 'Problem 2: Your Problem Name',
+  shortDesc: 'Brief description',
+  url: 'https://target-website.com/form',
+  description: 'Detailed description of what this solves',
+  solver: 'solveProblem2'
+}</code></pre>
+
+    <h3>Step 2: Add the Solver Function</h3>
+    <p>Add your solver function to <code>content.js</code>:</p>
+    <pre><code>/**
+ * Problem 2 Solver: Your Problem Name
+ */
+async function solveProblem2() {
+  console.log('Solving Problem 2');
+  
+  try {
+    // Your automation logic here
+    
+    return {
+      success: true,
+      message: 'Problem 2 solved!'
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: 'Error: ' + error.message
+    };
+  }
+}</code></pre>
+
+    <h3>Step 3: Register in Switch Statement</h3>
+    <p>Add a case to the switch statement in <code>executeSolver</code> function:</p>
+    <pre><code>switch(solverName) {
+  case 'solveProblem1':
+    result = await solveProblem1();
+    break;
+  case 'solveProblem2':  // Add this
+    result = await solveProblem2();
+    break;
+  default:
+    throw new Error('Unknown solver: ' + solverName);
+}</code></pre>
+
+    <h2>🛠️ Development Tips</h2>
+    <div class="tip">
+      <ul>
+        <li>Use <code>console.log()</code> extensively for debugging</li>
+        <li>Test on the actual target website</li>
+        <li>Check Chrome DevTools Console for errors</li>
+        <li>Use <code>chrome://extensions/</code> to reload the extension after changes</li>
+        <li>Inspect elements to find correct selectors</li>
+        <li>For React forms, use KeyboardEvent and InputEvent with proper parameters</li>
+        <li>Use MutationObserver to wait for dynamically rendered content</li>
+        <li>Add appropriate delays between actions (typing, clicking)</li>
+        <li>Handle errors gracefully with try-catch</li>
+        <li>Return descriptive success/error messages</li>
+      </ul>
+    </div>
+
+    <h2>📚 Resources</h2>
+    <ul>
+      <li><a href="https://developer.chrome.com/docs/extensions/mv3/" target="_blank">Chrome Extension Manifest V3 Docs</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver" target="_blank">MutationObserver API</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent" target="_blank">KeyboardEvent Reference</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/InputEvent" target="_blank">InputEvent Reference</a></li>
+      <li><a href="https://react-select.com/" target="_blank">React-Select Documentation</a></li>
+    </ul>
+
+    <h2>🐛 Troubleshooting</h2>
+    <div class="note">
+      <ul>
+        <li><strong>Solver not running:</strong> Check Chrome DevTools console for errors, ensure storage has pending solver</li>
+        <li><strong>React-Select not triggering:</strong> Make sure you're using InputEvent with inputType: 'insertText'</li>
+        <li><strong>Dropdown not appearing:</strong> Check network tab to see if API call is made, increase typing delays</li>
+        <li><strong>Fields not filling:</strong> Verify selectors using Chrome DevTools Elements panel</li>
+        <li><strong>Events not triggering:</strong> Ensure bubbles: true and cancelable: true are set</li>
+        <li><strong>Extension not loading:</strong> Reload from chrome://extensions/ after any code changes</li>
+        <li><strong>Timing issues:</strong> Increase setTimeout delays if content loads slowly</li>
+      </ul>
+    </div>
+    
+    <h2>🎓 Lessons Learned</h2>
+    <div class="tip">
+      <h3>React-Select v5 Automation</h3>
+      <p>Key takeaways from solving the Greenhouse Calendly location field:</p>
+      <ul>
+        <li>Simple <code>input.value = "text"</code> doesn't work with React-Select</li>
+        <li>Must simulate complete keyboard event sequence: keydown → value change → InputEvent → keyup</li>
+        <li><code>InputEvent</code> with <code>inputType: 'insertText'</code> is crucial for triggering React handlers</li>
+        <li>Character-by-character typing with delays mimics user behavior better</li>
+        <li>MutationObserver is essential for waiting on dynamically rendered dropdowns</li>
+        <li>Always allow time for API calls to complete before looking for options</li>
+        <li>React components may need 1-2 seconds after page load to fully mount</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

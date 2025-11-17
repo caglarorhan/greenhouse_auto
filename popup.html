@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Greenhouse Auto</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 Greenhouse Auto</h1>
+    <p class="subtitle">Web Automation Problems Solver</p>
+    
+    <div class="problem-selector">
+      <label for="problemSelect">Select Problem:</label>
+      <select id="problemSelect">
+        <option value="">-- Choose a problem --</option>
+      </select>
+    </div>
+
+    <div id="problemInfo" class="problem-info hidden">
+      <h3 id="problemName"></h3>
+      <p id="problemDesc" class="description"></p>
+      <p id="problemUrl" class="url"></p>
+    </div>
+
+    <button id="solveBtn" class="solve-btn" disabled>SOLVE</button>
+    <button id="wikiBtn" class="wiki-btn">📖 View Wiki</button>
+
+    <div id="status" class="status"></div>
+  </div>
+  
+  <script src="problems/problems.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
