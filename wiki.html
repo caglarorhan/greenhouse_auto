@@ -93,17 +93,20 @@
     <pre><code>greenhouse_auto/
 ├── manifest.json              # Extension configuration
 ├── popup.html/js/css          # Extension UI
-├── content.js                 # Content script with solvers
+├── content.js                 # Main orchestrator (loads & executes solvers)
 ├── background.js              # Background service worker
 ├── problems/
-│   └── problems.js            # Problem definitions
+│   └── problems.js            # Problem definitions (id, name, url, solver)
+├── solutions/
+│   └── problem1.js            # Problem 1 solution code
 └── wiki.html                  # This documentation</code></pre>
 
     <h3>Components</h3>
     <ul>
       <li><strong>Popup:</strong> User interface for selecting and running problems</li>
-      <li><strong>Content Script:</strong> Executes solver functions on target web pages</li>
-      <li><strong>Problems.js:</strong> Central registry of all problems and their metadata</li>
+      <li><strong>Content Script (content.js):</strong> Orchestrator that injects and executes solver functions</li>
+      <li><strong>Problems.js:</strong> Central registry of all problems with metadata</li>
+      <li><strong>Solutions Folder:</strong> Individual solution files (problem1.js, problem2.js, etc.) - easy to read and modify</li>
     </ul>
 
     <h2>🎯 How It Works</h2>
@@ -240,41 +243,64 @@ if (option) {
   solver: 'solveProblem2'
 }</code></pre>
 
-    <h3>Step 2: Add the Solver Function</h3>
-    <p>Add your solver function to <code>content.js</code>:</p>
+    <h3>Step 2: Create the Solution File</h3>
+    <p>Create a new file <code>solutions/problem2.js</code>:</p>
     <pre><code>/**
  * Problem 2 Solver: Your Problem Name
+ * 
+ * Target URL: https://target-website.com/form
+ * 
+ * Description:
+ * Detailed description of what this solves and how
+ * 
+ * Solution Steps:
+ * 1. Step one
+ * 2. Step two
+ * 3. Step three
  */
+
 async function solveProblem2() {
-  console.log('Solving Problem 2');
+  console.log('🤖 Solving Problem 2');
   
   try {
     // Your automation logic here
+    // Example: Fill form fields
+    const nameField = document.querySelector('#name');
+    if (nameField) {
+      nameField.value = 'Test User';
+      nameField.dispatchEvent(new Event('input', { bubbles: true }));
+    }
     
     return {
       success: true,
-      message: 'Problem 2 solved!'
+      message: 'Problem 2 solved successfully!'
     };
   } catch (error) {
+    console.error('Error solving Problem 2:', error);
     return {
       success: false,
       message: 'Error: ' + error.message
     };
   }
-}</code></pre>
+}
 
-    <h3>Step 3: Register in Switch Statement</h3>
-    <p>Add a case to the switch statement in <code>executeSolver</code> function:</p>
-    <pre><code>switch(solverName) {
-  case 'solveProblem1':
-    result = await solveProblem1();
-    break;
-  case 'solveProblem2':  // Add this
-    result = await solveProblem2();
-    break;
-  default:
-    throw new Error('Unknown solver: ' + solverName);
-}</code></pre>
+// Add helper functions here if needed
+</code></pre>
+
+    <h3>Step 3: Register the Solution Script</h3>
+    <p>Add the script path to <code>content.js</code> in the solverScripts array:</p>
+    <pre><code>const solverScripts = [
+  chrome.runtime.getURL('solutions/problem1.js'),
+  chrome.runtime.getURL('solutions/problem2.js')  // Add this line
+];</code></pre>
+
+    <h3>Step 4: Test</h3>
+    <ol>
+      <li>Reload the extension at <code>chrome://extensions/</code></li>
+      <li>Open the extension popup</li>
+      <li>Select your new problem from the dropdown</li>
+      <li>Click SOLVE and check the console for logs</li>
+    </ol>
 
     <h2>🛠️ Development Tips</h2>
     <div class="tip">

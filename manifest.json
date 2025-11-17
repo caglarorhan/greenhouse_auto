@@ -34,7 +34,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "problems/solvers/*.js"
+        "solutions/*.js"
       ],
       "matches": ["<all_urls>"]
     }
